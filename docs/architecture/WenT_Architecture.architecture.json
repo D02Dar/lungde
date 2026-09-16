@@ -1,0 +1,255 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "WenT 呼吸运动测量软件架构",
+    "locale": "zh-CN",
+    "output": "WenT_Architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [1180, 700],
+    "views": [
+      {
+        "id": "realtime-path",
+        "label": "浏览器实时测量",
+        "focus": ["camera", "capture-ui", "realtime-engine", "indexeddb", "records-ui"],
+        "note": "视频帧在浏览器内完成 ROI、信号与指标计算，并保存完整本地记录。"
+      },
+      {
+        "id": "offline-path",
+        "label": "后端离线分析",
+        "focus": ["capture-ui", "fastapi", "offline-pipeline", "review-export", "records-ui"],
+        "note": "同一段录像与 went-roi-v2 元数据进入独立的离线测量链路。"
+      },
+      {
+        "id": "persistence",
+        "label": "记录、证据与导出",
+        "focus": ["indexeddb", "fastapi", "review-export", "sqlite", "file-store", "records-ui"],
+        "note": "浏览器与后端分别保留记录；后端提供可复现 ZIP、证据帧与原始视频。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "operator",
+      "type": "external",
+      "label": "操作者",
+      "sublabel": "引导、测量与复核",
+      "pos": [20, 210],
+      "size": [130, 70]
+    },
+    {
+      "id": "camera",
+      "type": "external",
+      "label": "设备摄像头",
+      "sublabel": "MediaStream / WebM",
+      "pos": [20, 390],
+      "size": [130, 70]
+    },
+    {
+      "id": "capture-ui",
+      "type": "frontend",
+      "label": "Vue 测量与采集",
+      "sublabel": "定位、ROI 锁定、协议阶段、录像",
+      "tag": "Vite + Vue",
+      "pos": [210, 290],
+      "size": [170, 78]
+    },
+    {
+      "id": "realtime-engine",
+      "type": "frontend",
+      "label": "实时信号引擎",
+      "sublabel": "灰度、Otsu、滤波、峰谷、RR/VtA/VcA",
+      "pos": [450, 110],
+      "size": [180, 80]
+    },
+    {
+      "id": "indexeddb",
+      "type": "database",
+      "label": "浏览器本地记录",
+      "sublabel": "IndexedDB：视频、ROI、样本与结果",
+      "pos": [700, 110],
+      "size": [180, 80]
+    },
+    {
+      "id": "fastapi",
+      "type": "backend",
+      "label": "FastAPI 分析接口",
+      "sublabel": "上传、查询、重试、删除与导出",
+      "tag": "/api",
+      "pos": [450, 420],
+      "size": [180, 80]
+    },
+    {
+      "id": "offline-pipeline",
+      "type": "backend",
+      "label": "离线视频分析流水线",
+      "sublabel": "解码、ROI、分割、胸廓行带、独立指标",
+      "pos": [700, 420],
+      "size": [180, 80]
+    },
+    {
+      "id": "review-export",
+      "type": "backend",
+      "label": "对齐、证据与可复现导出",
+      "sublabel": "Primary 轨迹、质量诊断与 ZIP 导出",
+      "pos": [950, 420],
+      "size": [190, 80]
+    },
+    {
+      "id": "records-ui",
+      "type": "frontend",
+      "label": "Records 复核界面",
+      "sublabel": "双路径结果、波形、证据与比较导出",
+      "pos": [950, 110],
+      "size": [190, 80]
+    },
+    {
+      "id": "sqlite",
+      "type": "database",
+      "label": "SQLite 元数据与结果",
+      "sublabel": "analyses / evidence",
+      "pos": [450, 585],
+      "size": [170, 70]
+    },
+    {
+      "id": "file-store",
+      "type": "database",
+      "label": "本地文件存储",
+      "sublabel": "原始视频与 WebP 证据帧",
+      "tag": "WENT_DATA_DIR",
+      "pos": [700, 585],
+      "size": [170, 70]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "浏览器 / 用户设备",
+      "wraps": ["capture-ui", "realtime-engine", "indexeddb", "records-ui"],
+      "pad": 24
+    },
+    {
+      "kind": "region",
+      "label": "本地或学校 HTTPS 后端",
+      "wraps": ["fastapi", "offline-pipeline", "review-export", "sqlite", "file-store"],
+      "pad": 24
+    }
+  ],
+  "connections": [
+    {
+      "id": "operator-to-ui",
+      "from": "operator",
+      "to": "capture-ui",
+      "label": "引导、框选与控制",
+      "labelAt": [180, 206],
+      "variant": "emphasis"
+    },
+    {
+      "id": "camera-to-ui",
+      "from": "camera",
+      "to": "capture-ui",
+      "label": "视频帧与录像",
+      "labelAt": [180, 382],
+      "variant": "emphasis"
+    },
+    {
+      "id": "ui-to-realtime",
+      "from": "capture-ui",
+      "to": "realtime-engine",
+      "label": "锁定胸廓 ROI + 分阶段样本",
+      "variant": "emphasis"
+    },
+    {
+      "id": "realtime-to-indexeddb",
+      "from": "realtime-engine",
+      "to": "indexeddb",
+      "label": "实时波形、指标与证据时间戳",
+      "labelAt": [540, 204],
+      "variant": "emphasis"
+    },
+    {
+      "id": "ui-to-indexeddb",
+      "from": "capture-ui",
+      "to": "indexeddb",
+      "label": "原始 WebM、went-roi-v2 与协议窗口"
+    },
+    {
+      "id": "indexeddb-to-records",
+      "from": "indexeddb",
+      "to": "records-ui",
+      "label": "读取本地测量记录",
+      "labelAt": [915, 204],
+      "variant": "emphasis"
+    },
+    {
+      "id": "ui-to-fastapi",
+      "from": "capture-ui",
+      "to": "fastapi",
+      "label": "multipart/form-data：视频 + capture metadata",
+      "variant": "dashed"
+    },
+    {
+      "id": "fastapi-to-offline",
+      "from": "fastapi",
+      "to": "offline-pipeline",
+      "label": "校验 ROI 并执行分析",
+      "labelAt": [665, 416],
+      "variant": "emphasis"
+    },
+    {
+      "id": "offline-to-review",
+      "from": "offline-pipeline",
+      "to": "review-export",
+      "label": "独立离线波形、RR、Vt/Vc 与质量",
+      "labelAt": [915, 416],
+      "variant": "emphasis"
+    },
+    {
+      "id": "review-to-records",
+      "from": "review-export",
+      "to": "records-ui",
+      "label": "API JSON、证据帧与 ZIP",
+      "variant": "dashed"
+    },
+    {
+      "id": "fastapi-to-sqlite",
+      "from": "fastapi",
+      "to": "sqlite",
+      "label": "分析状态、元数据与结果",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "fastapi-to-files",
+      "from": "fastapi",
+      "to": "file-store",
+      "label": "原始视频与证据帧"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "双路径测量",
+      "items": [
+        "Realtime 在浏览器内即时计算；Offline 在后端从原始视频独立重算",
+        "对齐与 Primary 轨迹只用于复核展示，不回写正式 Vt、Vc、ratio 或 RR"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "可追溯记录",
+      "items": [
+        "浏览器 IndexedDB 保留原始录像、ROI、相位、样本、结果与证据时间戳",
+        "后端 SQLite + 文件目录保留分析记录、上传视频与证据帧"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "部署边界",
+      "items": [
+        "首选单一 HTTPS 学校服务器：静态 Vue 与 /api 反向代理到 FastAPI",
+        "当前没有跨用户或跨设备同步；多实例前需认证、所有权校验与共享存储"
+      ]
+    }
+  ]
+}

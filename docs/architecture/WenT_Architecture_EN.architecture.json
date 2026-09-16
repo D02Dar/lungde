@@ -1,0 +1,252 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "WenT Respiratory Movement Measurement Architecture",
+    "locale": "en",
+    "output": "WenT_Architecture_EN.html",
+    "quality_profile": "showcase",
+    "viewBox": [1180, 685],
+    "views": [
+      {
+        "id": "realtime-path",
+        "label": "Browser Realtime Measurement",
+        "focus": ["camera", "capture-ui", "realtime-engine", "indexeddb", "records-ui"],
+        "note": "Video frames are processed in-browser for ROI, signal, and metrics, then saved as a complete local record."
+      },
+      {
+        "id": "offline-path",
+        "label": "Backend Offline Analysis",
+        "focus": ["capture-ui", "fastapi", "offline-pipeline", "review-export", "records-ui"],
+        "note": "The same recording and went-roi-v2 metadata enter an independent offline measurement path."
+      },
+      {
+        "id": "persistence",
+        "label": "Records, Evidence & Export",
+        "focus": ["indexeddb", "fastapi", "review-export", "sqlite", "file-store", "records-ui"],
+        "note": "Browser and backend retain separate records; the backend exposes reproducible ZIPs, evidence frames, and source video."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "operator",
+      "type": "external",
+      "label": "Operator",
+      "sublabel": "Measurement & review",
+      "pos": [20, 210],
+      "size": [130, 70]
+    },
+    {
+      "id": "camera",
+      "type": "external",
+      "label": "Device Camera",
+      "sublabel": "MediaStream / WebM",
+      "pos": [20, 390],
+      "size": [130, 70]
+    },
+    {
+      "id": "capture-ui",
+      "type": "frontend",
+      "label": "Vue Capture & Measurement",
+      "sublabel": "ROI lock, phases & recording",
+      "tag": "Vite + Vue",
+      "pos": [210, 290],
+      "size": [170, 78]
+    },
+    {
+      "id": "realtime-engine",
+      "type": "frontend",
+      "label": "Realtime Signal Engine",
+      "sublabel": "Otsu + filtering to RR/VtA/VcA",
+      "pos": [450, 110],
+      "size": [180, 80]
+    },
+    {
+      "id": "indexeddb",
+      "type": "database",
+      "label": "Browser Records",
+      "sublabel": "IndexedDB: video, ROI & results",
+      "pos": [700, 110],
+      "size": [180, 80]
+    },
+    {
+      "id": "fastapi",
+      "type": "backend",
+      "label": "FastAPI Analysis API",
+      "sublabel": "Upload, query, retry & export",
+      "tag": "/api",
+      "pos": [450, 420],
+      "size": [180, 80]
+    },
+    {
+      "id": "offline-pipeline",
+      "type": "backend",
+      "label": "Offline Video Pipeline",
+      "sublabel": "Decode, ROI & offline metrics",
+      "pos": [700, 420],
+      "size": [180, 80]
+    },
+    {
+      "id": "review-export",
+      "type": "backend",
+      "label": "Alignment, Evidence & Export",
+      "sublabel": "Primary trace, quality & ZIP",
+      "pos": [950, 420],
+      "size": [190, 80]
+    },
+    {
+      "id": "records-ui",
+      "type": "frontend",
+      "label": "Records Review UI",
+      "sublabel": "Results, evidence & comparison",
+      "pos": [950, 110],
+      "size": [190, 80]
+    },
+    {
+      "id": "sqlite",
+      "type": "database",
+      "label": "SQLite Metadata & Results",
+      "sublabel": "analyses / evidence",
+      "pos": [450, 585],
+      "size": [170, 70]
+    },
+    {
+      "id": "file-store",
+      "type": "database",
+      "label": "Local File Store",
+      "sublabel": "Video + WebP evidence frames",
+      "tag": "WENT_DATA_DIR",
+      "pos": [700, 585],
+      "size": [170, 70]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Browser / User Device",
+      "wraps": ["capture-ui", "realtime-engine", "indexeddb", "records-ui"],
+      "pad": 24
+    },
+    {
+      "kind": "region",
+      "label": "Local or School HTTPS Backend",
+      "wraps": ["fastapi", "offline-pipeline", "review-export", "sqlite", "file-store"],
+      "pad": 24
+    }
+  ],
+  "connections": [
+    {
+      "id": "operator-to-ui",
+      "from": "operator",
+      "to": "capture-ui",
+      "label": "Guidance, framing & controls",
+      "labelAt": [180, 206],
+      "variant": "emphasis"
+    },
+    {
+      "id": "camera-to-ui",
+      "from": "camera",
+      "to": "capture-ui",
+      "label": "Video frames & recording",
+      "labelAt": [180, 382],
+      "variant": "emphasis"
+    },
+    {
+      "id": "ui-to-realtime",
+      "from": "capture-ui",
+      "to": "realtime-engine",
+      "label": "Locked thorax ROI + phased samples",
+      "variant": "emphasis"
+    },
+    {
+      "id": "realtime-to-indexeddb",
+      "from": "realtime-engine",
+      "to": "indexeddb",
+      "label": "Realtime waveform, metrics & evidence times",
+      "labelAt": [540, 204],
+      "variant": "emphasis"
+    },
+    {
+      "id": "ui-to-indexeddb",
+      "from": "capture-ui",
+      "to": "indexeddb",
+      "label": "Original WebM, went-roi-v2 & phase windows"
+    },
+    {
+      "id": "indexeddb-to-records",
+      "from": "indexeddb",
+      "to": "records-ui",
+      "label": "Load local measurement records",
+      "labelAt": [915, 204],
+      "variant": "emphasis"
+    },
+    {
+      "id": "ui-to-fastapi",
+      "from": "capture-ui",
+      "to": "fastapi",
+      "label": "multipart/form-data: video + capture metadata",
+      "variant": "dashed"
+    },
+    {
+      "id": "fastapi-to-offline",
+      "from": "fastapi",
+      "to": "offline-pipeline",
+      "label": "Validate ROI & run analysis",
+      "labelAt": [790, 514],
+      "variant": "emphasis"
+    },
+    {
+      "id": "offline-to-review",
+      "from": "offline-pipeline",
+      "to": "review-export",
+      "label": "Independent waveform, RR, Vt/Vc & quality",
+      "labelAt": [915, 416],
+      "variant": "emphasis"
+    },
+    {
+      "id": "review-to-records",
+      "from": "review-export",
+      "to": "records-ui",
+      "label": "API JSON, evidence frames & ZIP",
+      "variant": "dashed"
+    },
+    {
+      "id": "fastapi-to-sqlite",
+      "from": "fastapi",
+      "to": "sqlite",
+      "label": "Analysis state, metadata & results",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "fastapi-to-files",
+      "from": "fastapi",
+      "to": "file-store",
+      "label": "Original video & evidence frames"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Independent Dual Paths",
+      "items": [
+        "Realtime and Offline stay independent; Primary alignment is review-only and never changes formal metrics"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Traceable Records",
+      "items": [
+        "IndexedDB stores browser records; SQLite and files retain backend analyses, videos, and evidence frames"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Deployment Boundary",
+      "items": [
+        "Preferred: one HTTPS server; multi-instance use still needs auth, ownership checks, and shared storage"
+      ]
+    }
+  ]
+}

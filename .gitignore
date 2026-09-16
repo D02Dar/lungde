@@ -1,0 +1,48 @@
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+!**/.env.example
+!**/.env.*.example
+
+# JavaScript dependencies and build output
+frontend/node_modules/
+frontend/dist/
+npm-debug.log*
+
+# Python environments, caches, and coverage
+backend/.venv/
+backend/*.egg-info/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Runtime records and potentially identifiable measurement data
+backend/data/
+/data/
+*.sqlite3
+*.record.json
+
+# Optional demonstration media: add only with documented rights and consent
+frontend/public/guide/standing-example.mp4
+
+# Generated deliverables and agent workspace files
+.claude/
+.codex-*/
+tmp/
+output/
+deliverables/
+*.visual-check.*
+
+# Notebook and editor caches
+.ipynb_checkpoints/
+.vscode/
+.idea/
+
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini

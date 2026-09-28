@@ -36,9 +36,11 @@ def extract_evidence(
         evidence_id, path = store.allocate_evidence(analysis_id, request.key, ".webp")
         temporary = path.with_suffix(path.suffix + ".tmp.webp")
         try:
-            if not cv2.imwrite(str(temporary), frame, [cv2.IMWRITE_WEBP_QUALITY, 95]):
+            encoded_ok, encoded = cv2.imencode(".webp", frame, [cv2.IMWRITE_WEBP_QUALITY, 95])
+            if not encoded_ok:
                 logger.error("Failed to write evidence frame to %s", temporary)
                 continue
+            temporary.write_bytes(encoded.tobytes())
             os.replace(temporary, path)
             roi = evidence_roi(request.roi_kind, metadata, offline_roi, width, height)
             item = EvidenceFrame(

@@ -139,6 +139,7 @@ function number(value, digits) { return Number.isFinite(value) ? value.toFixed(d
 function integer(value) { return Number.isFinite(value) ? String(Math.round(value)) : '--'; }
 function percent(value) { return Number.isFinite(value) ? `${Math.round(value * 100)}%` : '--'; }
 function seconds(value) { return Number.isFinite(value) ? `${value.toFixed(1)} s` : '--'; }
+function signedMs(value) { return Number.isFinite(value) ? `${value >= 0 ? '+' : ''}${Math.round(value)} ms` : '--'; }
 function interval(value) { return value ? `${(value.start_ms / 1000).toFixed(2)}–${(value.end_ms / 1000).toFixed(2)} s` : '--'; }
 function roiText(value) { return value ? `${value.width}×${value.height} @ ${value.x},${value.y}` : '--'; }
 function reasonLabel(value) {

@@ -1,7 +1,11 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "went-respiratory-backend"
 version = "0.1.0"
-description = "FastAPI offline offline RGB respiratory analysis"
+description = "FastAPI offline RGB respiratory analysis"
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.115,<1",
@@ -16,6 +20,10 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["pytest>=8.3,<9", "httpx>=0.28,<1"]
+
+[tool.setuptools.packages.find]
+include = ["app", "app.*"]
+exclude = ["tests", "tests.*", "data", "data.*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

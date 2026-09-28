@@ -30,6 +30,7 @@ backend/data/
 frontend/public/guide/standing-example.mp4
 
 # Generated deliverables and agent workspace files
+README.pdf
 .claude/
 .codex-*/
 tmp/

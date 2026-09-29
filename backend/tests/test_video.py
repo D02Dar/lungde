@@ -20,7 +20,8 @@ def write_test_video(path: Path, *, fps: float = 15.0, seconds: float = 4.0) -> 
 
 
 def test_declared_duration_corrects_implausible_container_fps():
-    fps, source = _normalise_fps(1000.0, 23.2, 696)
+    # Synthetic 37-second protocol example; this does not record a camera video.
+    fps, source = _normalise_fps(1000.0, 37.0, 1110)
     assert source == "declared_duration"
     assert fps == pytest.approx(30.0)
 

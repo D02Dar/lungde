@@ -15,12 +15,13 @@ def test_store_persists_and_deletes_video(tmp_path: Path):
         filename="capture.webm",
         mime_type="video/webm;codecs=vp8",
         byte_size=video_path.stat().st_size,
-        declared_duration_ms=23200,
+        declared_duration_ms=37000,
         video_path=video_path,
         capture_metadata={"roi": {"x": .2, "y": .1, "width": .5, "height": .7}},
     )
     assert created["status"] == "uploaded"
     assert created["frontend_record_id"] == "local-record-1"
+    assert created["declared_duration_ms"] == 37000
     assert store.video_path(created).exists()
 
     updated = store.update(

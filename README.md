@@ -15,7 +15,7 @@ WenT turns a guided side-view camera recording into a reviewable respiratory-mov
 
 - **Guides the operator** through preparation, positioning, ROI selection, and six timed measurement phases (37 seconds total).
 - **Measures in the browser** using grayscale conversion, Otsu segmentation, subject-area tracking, filtering, peak/trough analysis, RR, `VtA`, and `VcA`.
-- **Keeps a local record first** in IndexedDB, including the original clip, ROI, phases, Realtime samples, metrics, and evidence timing.
+- **Keeps a local record first** in IndexedDB, including the video when recording is available, ROI, phases, Realtime samples, metrics, and evidence timing.
 - **Runs an independent Offline pipeline** with FastAPI, OpenCV, and an FFmpeg fallback for browser-recorded WebM files.
 - **Explains disagreement instead of concealing it** by showing Realtime, Offline, and an aligned review-only Primary trace together.
 - **Retains inspectable evidence** for stable holds and Offline landmarks such as maximum inhale and maximum exhale.
@@ -41,7 +41,7 @@ Primary is not a third measurement algorithm. It supports visual review and neve
 | --- | --- |
 | Position | The operator frames the side-view upper body and locks one normalized `went-roi-v2` thorax ROI. |
 | Measure | WenT records the guided phases while the browser derives a Realtime area signal. |
-| Save locally | The original video, ROI, phase windows, samples, results, and evidence references are written to IndexedDB. |
+| Save locally | The available video, ROI, phase windows, samples, results, and evidence references are written to IndexedDB. A signal-only record can be saved when video recording is unavailable. |
 | Analyze Offline | The saved recording and capture contract are submitted to FastAPI for independent decoding and analysis. |
 | Align for review | WenT estimates sign and delay, then creates a normalized Primary display trace while preserving both formal results. |
 | Inspect and export | Records, waveforms, evidence frames, quality information, and reproducible exports remain linked by analysis ID. |
@@ -113,7 +113,7 @@ npm run dev
 
 Open [`http://127.0.0.1:5174`](http://127.0.0.1:5174). The development server proxies `/api` to the backend on port `8000`. Keep both terminals running while using the application. On macOS or Linux, use the same `npm` commands in a second shell.
 
-Expected checks: the frontend prints five `... tests passed` lines, `npm run build` ends with `built`, and the backend prints `45 passed` in the currently tested revision. A real camera run must be checked separately on the target device.
+Expected checks: the frontend prints five `... tests passed` lines, `npm run build` ends with `built`, and the backend contains 45 tests in the documented revision. A real camera run must be checked separately on the target device.
 
 If `py` is not found on Windows, rerun the Python installer and enable its launcher, or use the installed `python` command after confirming `python --version` reports 3.12. If `npm` or `git` is not found, reopen PowerShell after installation. If port `8000` or `5174` is busy, stop the old service before retrying; the frontend proxy assumes the backend is on `8000`. If the backend reports a missing package, verify that `pip install -e ".[test]"` completed in the new `.venv`. Do not copy a `.venv` or `node_modules` directory from another computer.
 
@@ -156,7 +156,7 @@ Image-derived amplitude values are proxies. `vt_px`, `vc_px`, and their frontend
 
 | Store | Default location | Contains |
 | --- | --- | --- |
-| Browser records | IndexedDB in the current browser profile | Video, ROI, phases, Realtime samples/results, backend link, evidence references |
+| Browser records | IndexedDB in the current browser profile | Video when available, ROI, phases, Realtime samples/results, backend link, evidence references |
 | Analysis metadata | `backend/data/analyses.sqlite3` | Analysis status, request metadata, results, quality, alignment, errors |
 | Binary files | `backend/data/videos/` and the configured evidence paths | Uploaded recordings and WebP evidence frames |
 
@@ -173,19 +173,19 @@ README.txt
 
 ## Verification status
 
-Automated checks rerun on 28 September 2026 in Windows with Python 3.12.14 and Node.js 24.19.0. Browser and physical-device observations remain from 17 September 2026 unless stated otherwise. Full details are in the external `05_WenT_Test_Record_and_Release_Readiness.docx` handover document.
+The documented clean-install checks ran on 28 September 2026 with Python 3.12.14; the backend suite was rerun on 29 September after its synthetic duration fixtures were corrected. Frontend tests used Node.js 22.13.1, and a production build also passed with Node.js 24.19.0. API and browser observations below are historical checks from 17 September, not a complete target-device workflow. Full details are in the separately supplied `05_WenT_Test_Record_and_Release_Readiness.docx` handover document.
 
 | Check | Result |
 | --- | --- |
-| Backend test suite | **45 / 45 passed** after using a writable pytest temporary directory |
-| Frontend test groups | **Passed** |
-| Production frontend build | **Passed** — Vite 8.2.2, 1,580 modules transformed |
-| API health, evidence retrieval, and ZIP export | **Passed** |
-| Desktop `1440×900` | **Passed** — no horizontal overflow |
-| Tablet landscape `1366×1024` | **Passed** — no horizontal overflow |
+| Backend test suite | **45 / 45 passed** on 29 September 2026 |
+| Frontend test groups | **Five passed** on 28 September 2026 |
+| Production frontend build | **Passed** — Vite 8.2.2, 1,580 modules transformed; Node.js 24.19.0 build also passed |
+| API health, evidence retrieval, and ZIP export | **Historical pass** on 17 September 2026; not rerun in the clean clone |
+| Desktop `1440×900` | **Preliminary viewport check** — no horizontal overflow observed |
+| Tablet landscape `1366×1024` | **Preliminary viewport check** — no horizontal overflow observed |
 | Tablet portrait `1024×1366` | **Open** — horizontal overflow remains |
 | Phone `390×844` | **Open** — horizontal overflow remains |
-| Physical target-device camera run | **Pending** |
+| Full target-device camera-to-export workflow | **Not yet executed** (STC-01 to STC-06) |
 
 Run the checks yourself after installation:
 
